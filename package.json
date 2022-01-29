@@ -1,0 +1,43 @@
+{
+  "name": "relay-compiler-webpack-plugin",
+  "version": "0.1.0",
+  "description": "",
+  "author": {
+    "name": "Vadim Evseev",
+    "email": "chiffa117@gmail.com"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "README.md",
+    "dist/*",
+    "src/*"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc && rollup -c rollup.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ch1ffa/relay-compiler-webpack-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ch1ffa/relay-compiler-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/ch1ffa/relay-compiler-webpack-plugin#readme",
+  "devDependencies": {
+    "@open-wc/building-rollup": "^2.0.1",
+    "@types/cross-spawn": "^6.0.2",
+    "deepmerge": "^4.2.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.66.1",
+    "webpack": "^5.67.0"
+  },
+  "dependencies": {
+    "cross-spawn": "^7.0.3",
+    "schema-utils": "^4.0.0"
+  },
+  "peerDependencies": {
+    "webpack": "^4.0.0 || ^5.0.0"
+  }
+}

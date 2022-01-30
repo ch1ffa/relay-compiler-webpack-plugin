@@ -11,6 +11,12 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+		"dist/*.js",
+    "dist/*.mjs",
+    "dist/*.d.ts",
+    "dist/*.map"
+	],
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -39,7 +45,6 @@
     "schema-utils": "^4.0.0"
   },
   "peerDependencies": {
-    "webpack": "^4.0.0 || ^5.0.0",
     "relay-compiler": "^13.0.2"
   }
 }

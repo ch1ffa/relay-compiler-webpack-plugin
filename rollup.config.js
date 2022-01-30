@@ -1,11 +1,41 @@
-import merge from 'deepmerge';
-import { createBasicConfig } from '@open-wc/building-rollup';
+import dts from 'rollup-plugin-dts'
+import esbuild from 'rollup-plugin-esbuild'
+import { terser } from 'rollup-plugin-terser'
 
-const baseConfig = createBasicConfig();
+const name = require('./package.json').main.replace(/\.js$/, '')
 
-export default merge(baseConfig, {
-  input: './dist/src/index.js',
-  output: {
-      dir: 'dist',
-  }
-});
+const bundle = config => ({
+  ...config,
+  input: 'src/index.ts',
+  external: id => !/^[./]/.test(id),
+})
+
+export default [
+  bundle({
+    plugins: [
+      esbuild(),
+      terser(),
+    ],
+    output: [
+      {
+        file: `${name}.js`,
+        format: 'cjs',
+        sourcemap: true,
+      },
+      {
+        file: `${name}.mjs`,
+        format: 'es',
+        sourcemap: true,
+      },
+    ],
+  }),
+  bundle({
+    plugins: [
+      dts(),
+    ],
+    output: {
+      file: `${name}.d.ts`,
+      format: 'es',
+    },
+  }),
+]

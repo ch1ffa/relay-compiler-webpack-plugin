@@ -1,1 +1,2 @@
-export { RelayCompilerPlugin, RelayCompilerPluginOptions, OutputKind } from './plugin';
+export { RelayCompilerPlugin, OutputKind } from './plugin';
+export type { RelayCompilerPluginOptions } from './plugin';

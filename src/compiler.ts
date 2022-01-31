@@ -1,5 +1,4 @@
 import spawn from 'cross-spawn';
-import { WebpackError } from 'webpack';
 
 import type { ChildProcess } from 'child_process';
 
@@ -11,7 +10,7 @@ export interface IRelayCompiler {
   stop: () => void;
   clearErrors: () => void;
   hasErrors: boolean;
-  errors: WebpackError;
+  error: Error;
 }
 
 export class RelayCompiler implements IRelayCompiler {
@@ -27,8 +26,8 @@ export class RelayCompiler implements IRelayCompiler {
     return this._compilationErrorData.length > 0;
   }
 
-  get errors() {
-    return new WebpackError(this._compilationErrorData);
+  get error() {
+    return new Error(this._compilationErrorData);
   }
 
   runOnce() {

@@ -1,6 +1,6 @@
 import { validate } from 'schema-utils';
 
-import { Compiler, WebpackPluginInstance } from 'webpack';
+import { Compiler, WebpackError, WebpackPluginInstance } from 'webpack';
 
 import { schema } from './schema';
 import { IRelayCompiler, RelayCompiler } from './compiler';
@@ -56,7 +56,8 @@ export class RelayCompilerPlugin implements WebpackPluginInstance {
   private installErrorHandler(compiler: Compiler) {
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, (compilation, next) => {
       if (this.relayCompiler.hasErrors) {
-        compilation.errors.push(this.relayCompiler.errors);
+        // Workaround for Webpack 4 typings
+        compilation.errors.push(this.relayCompiler.error as WebpackError);
         this.relayCompiler.clearErrors();
       }
       next();

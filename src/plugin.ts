@@ -3,7 +3,7 @@ import { validate } from 'schema-utils';
 import { Compiler, WebpackPluginInstance } from 'webpack';
 
 import { schema } from './schema';
-import { IRelayCompiler, RelayCompiler } from './relayCompiler';
+import { IRelayCompiler, RelayCompiler } from './compiler';
 import { checkWatchman, getRelayArgs } from './utils';
 
 const PLUGIN_NAME = "relay-compiler-webpack-plugin";

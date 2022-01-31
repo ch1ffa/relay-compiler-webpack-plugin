@@ -14,7 +14,7 @@ export interface IRelayCompiler {
   errors: WebpackError;
 }
 
-export class RelayCompiler {
+export class RelayCompiler implements IRelayCompiler {
   private _subprocess?: ChildProcess;
   private _compilationErrorData: string = '';
   private _args: string[];

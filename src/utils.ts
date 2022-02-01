@@ -4,16 +4,14 @@ import { RelayCompilerPluginOptions } from "./plugin";
 const WATCHMAN = 'watchman';
 
 export const checkWatchman = () => {
-  try {
-    // the sync function below will fail if watchman is not installed,
-    // an error will be thrown
-    if (spawn.sync(WATCHMAN, ['-v'])) {
-      return true;
-    }
-  } catch (e) {
+  // the sync function below will fail if watchman is not installed,
+  // an error will be thrown
+  const { error } = spawn.sync(WATCHMAN, ['-v']);
+  if (error) {
     console.log('Watchman is not installed. Ignoring watch option...');
+    return false;
   }
-  return false;
+  return true;
 }
 
 export const getRelayArgs = (options: RelayCompilerPluginOptions): string[] => {

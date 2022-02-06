@@ -8,7 +8,7 @@ If you are using relay in your project, you can run relay-compiler before the st
 
 In the first case, you have to run relay-compiler manually every time you've changed your queries. In the second case, you have to use a second shell to run relay-compiler in watch mode or use tools like `concurrently`. Both solutions are possible, but cause unneccessary rebuilds.
 
-This webpack plugins attempts to solve this problem and synchronizes webpack and relay compilation processes. Mainly, it's based on assumption that relay-compiler, being written in Rust, is much faster than webpack file system watcher, particularly using `watchman`.
+This webpack plugins attempts to solve this problem and synchronizes webpack and relay compilation processes.
 
 ## Usage
 
@@ -41,6 +41,8 @@ export interface RelayCompilerPluginOptions {
 ```
 
 Default option is `watch: true`. If `watchman` isn't installed, then option `watch: false` is being applied.
+
+Changing `validate` option is not recommended, because the plugin reads output in the watch mode.
 
 ## How it works
 

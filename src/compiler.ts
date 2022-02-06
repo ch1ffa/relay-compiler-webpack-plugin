@@ -3,66 +3,67 @@ import spawn from 'cross-spawn';
 import type { ChildProcess } from 'child_process';
 
 const RELAY = 'relay-compiler';
+const COMPILING = 'compiling';
+const FAILED = 'compilation failed';
 
 export interface IRelayCompiler {
-  runOnce: () => void;
-  watch: () => void;
-  stop: () => void;
-  clearErrors: () => void;
-  hasErrors: boolean;
+  runOnce(): void;
+  watch(callback?: () => void): void;
+  stop(): void;
+  hasError: boolean;
   error: Error;
 }
 
 export class RelayCompiler implements IRelayCompiler {
-  private _subprocess?: ChildProcess;
-  private _compilationErrorData: string = '';
-  private _args: string[];
+  private subprocess?: ChildProcess;
+  private errorMessage: string = '';
 
-  constructor(args: string[]) {
-    this._args = args;
-  }
+  constructor(private args: string[]) { }
 
-  get hasErrors() { 
-    return this._compilationErrorData.length > 0;
+  get hasError() { 
+    return this.errorMessage.length > 0;
   }
 
   get error() {
-    return new Error(this._compilationErrorData);
+    return new Error(this.errorMessage);
   }
 
   runOnce() {
-    const subprocess = spawn.sync(RELAY, this._args);
+    const subprocess = spawn.sync(RELAY, this.args);
     if (subprocess.stdout?.byteLength > 0) {
       console.log(`${subprocess.stdout}`);
     }
     if (subprocess.stderr?.byteLength > 0) {
-      this._compilationErrorData += subprocess.stderr.toString('utf-8');
+      this.errorMessage += subprocess.stderr.toString('utf-8');
     }
   }
 
-  // TODO: Handle compiler crash 
-  watch() {
-    if (!this._subprocess) {
+  // In the watch mode, we have to parse output
+  // to detect compiler's state
+  watch(callback?: () => void) {
+    if (!this.subprocess) {
       // Start relay-compiler in watch mode
-      this._subprocess = spawn(RELAY, [...this._args, '--watch']);
-      this._subprocess?.stderr?.setEncoding('utf-8');
-      // Show info
-      this._subprocess?.stdout?.on('data', chunk => {
-        console.log(`${chunk}`);
+      this.subprocess = spawn(RELAY, [...this.args, '--watch']);
+      this.subprocess?.stderr?.setEncoding('utf-8');
+      // Clear errors during compilation
+      this.subprocess?.stdout?.on('data', chunk => {
+        if (String(chunk).toLowerCase().includes(COMPILING)) {
+          this.errorMessage = '';
+        }
       });
       // Collect errors from stderr (added in v13.0.2)
-      this._subprocess?.stderr?.on('data', chunk => {
-        this._compilationErrorData += chunk;
+      this.subprocess?.stderr?.on('data', chunk => {
+        this.errorMessage += chunk;
+        // Do something if compilation failed
+        if (this.errorMessage.toLowerCase().includes(FAILED)) {
+          callback?.();
+        }
       });
     }
   }
 
   stop() {
-    this._subprocess?.kill();
-    this._subprocess = undefined;
-  }
-
-  clearErrors() {
-    this._compilationErrorData = '';
+    this.subprocess?.kill();
+    this.subprocess = undefined;
   }
 }

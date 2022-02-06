@@ -55,19 +55,22 @@ export class RelayCompilerPlugin implements WebpackPluginInstance {
   // Collect errors and push to compilation object`
   private installErrorHandler(compiler: Compiler) {
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, (compilation, next) => {
-      if (this.relayCompiler.hasErrors) {
+      if (this.relayCompiler.hasError) {
         // Workaround for Webpack 4 typings
         compilation.errors.push(this.relayCompiler.error as WebpackError);
-        this.relayCompiler.clearErrors();
       }
       next();
-    })
+    });
   }
 
   private installWatchHandlers(compiler: Compiler) {
     // Run relay-compiler early
     compiler.hooks.afterEnvironment.tap(PLUGIN_NAME, () => {
-      this.relayCompiler.watch();
+      this.relayCompiler.watch(() => {
+        // Force compilation to show errors (webpack 5 only)
+        // TODO: Find a way to force rebuild for webpack 4
+        compiler.root?.watching?.invalidate();
+      });
     });
     // Should we kill the subprocess in case of watch close?
     compiler.hooks.watchClose.tap(PLUGIN_NAME, () => {

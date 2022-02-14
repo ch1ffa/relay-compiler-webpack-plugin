@@ -29,6 +29,7 @@ export class RelayCompiler implements IRelayCompiler {
   }
 
   runOnce() {
+    this.errorMessage = '';
     const subprocess = spawn.sync(RELAY, this.args);
     if (subprocess.stdout?.byteLength > 0) {
       console.log(`${subprocess.stdout}`);

@@ -16,6 +16,7 @@ export enum OutputKind {
 }
 
 export interface RelayCompilerPluginOptions {
+  configFile?: string;
   watch?: boolean;
   validate?: boolean;
   output?: OutputKind;
@@ -31,11 +32,17 @@ export class RelayCompilerPlugin implements WebpackPluginInstance {
   private options: RelayCompilerPluginOptions;
   private relayCompiler: IRelayCompiler;
 
-  constructor(options: RelayCompilerPluginOptions) {
+  constructor(
+    options: RelayCompilerPluginOptions,
+    private configFile?: string
+  ) {
     const merged = { ...RelayCompilerPlugin.defaultOptions, ...options };
     validate(schema, merged, { name: PLUGIN_NAME });
     this.options = merged;
-    this.relayCompiler = new RelayCompiler(getRelayArgs(this.options));
+    this.relayCompiler = new RelayCompiler(
+      getRelayArgs(this.options),
+      this.configFile
+    );
   }
 
   apply(compiler: Compiler) {

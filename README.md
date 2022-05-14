@@ -30,6 +30,7 @@ You can pass options to the RelayCompilerPlugin which corespond to relay-compile
 
 ```ts
 export interface RelayCompilerPluginOptions {
+  configFile?: string;
   watch?: boolean;
   validate?: boolean;
   output?: OutputKind;

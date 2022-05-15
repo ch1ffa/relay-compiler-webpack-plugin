@@ -18,7 +18,7 @@ export class RelayCompiler implements IRelayCompiler {
   private subprocess?: ChildProcess;
   private errorMessage: string = '';
 
-  constructor(private args: string[], private configFile?: string) {}
+  constructor(private args: string[]) {}
 
   get hasError() { 
     return this.errorMessage.length > 0;
@@ -30,8 +30,7 @@ export class RelayCompiler implements IRelayCompiler {
 
   runOnce() {
     this.errorMessage = '';
-    const args = this.configFile ? [...this.args, this.configFile] : this.args;
-    const subprocess = spawn.sync(RELAY, args);
+    const subprocess = spawn.sync(RELAY, this.args);
     if (subprocess.stdout?.byteLength > 0) {
       console.log(`${subprocess.stdout}`);
     }
@@ -45,8 +44,7 @@ export class RelayCompiler implements IRelayCompiler {
   watch(callback?: () => void) {
     if (!this.subprocess) {
       // Start relay-compiler in watch mode
-      const subArgs = this.configFile ? [...this.args, "--watch", this.configFile] : [...this.args, "--watch"];
-      this.subprocess = spawn(RELAY, subArgs);
+      this.subprocess = spawn(RELAY, [...this.args, '--watch']);
       this.subprocess?.stderr?.setEncoding("utf-8");
       // Clear errors during compilation
       this.subprocess?.stdout?.on('data', chunk => {

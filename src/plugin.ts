@@ -6,7 +6,7 @@ import { schema } from './schema';
 import { IRelayCompiler, RelayCompiler } from './compiler';
 import { checkWatchman, getRelayArgs } from './utils';
 
-const PLUGIN_NAME = "relay-compiler-webpack-plugin";
+const PLUGIN_NAME = 'relay-compiler-webpack-plugin';
 
 export enum OutputKind {
   DEBUG = 'debug',
@@ -16,7 +16,7 @@ export enum OutputKind {
 }
 
 export interface RelayCompilerPluginOptions {
-  configFile?: string;
+  config?: string;
   watch?: boolean;
   validate?: boolean;
   output?: OutputKind;
@@ -32,17 +32,11 @@ export class RelayCompilerPlugin implements WebpackPluginInstance {
   private options: RelayCompilerPluginOptions;
   private relayCompiler: IRelayCompiler;
 
-  constructor(
-    options: RelayCompilerPluginOptions,
-    private configFile?: string
-  ) {
+  constructor(options: RelayCompilerPluginOptions) {
     const merged = { ...RelayCompilerPlugin.defaultOptions, ...options };
     validate(schema, merged, { name: PLUGIN_NAME });
     this.options = merged;
-    this.relayCompiler = new RelayCompiler(
-      getRelayArgs(this.options),
-      this.configFile
-    );
+    this.relayCompiler = new RelayCompiler(getRelayArgs(this.options));
   }
 
   apply(compiler: Compiler) {

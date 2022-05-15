@@ -30,7 +30,7 @@ You can pass options to the RelayCompilerPlugin which corespond to relay-compile
 
 ```ts
 export interface RelayCompilerPluginOptions {
-  configFile?: string;
+  config?: string;
   watch?: boolean;
   validate?: boolean;
   output?: OutputKind;
@@ -43,9 +43,11 @@ export interface RelayCompilerPluginOptions {
 
 Default option is `watch: true`. If `watchman` isn't installed, then option `watch: false` is being applied.
 
+Option `config` defines path to a config file. If not provided, searches for a config in package.json under the `relay` key or `relay.config.json` files among other up from the current working directory.
+
 Changing `validate` option is not recommended, because the plugin reads output in the watch mode.
 
-## How it works
+## How does it work
 
 Depending on options, relay-compiler can be run in the watch mode or after every file change detected by webpack.
 

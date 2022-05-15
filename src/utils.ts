@@ -1,5 +1,5 @@
-import spawn from "cross-spawn";
-import { RelayCompilerPluginOptions } from "./plugin";
+import spawn from 'cross-spawn';
+import { RelayCompilerPluginOptions } from './plugin';
 
 const WATCHMAN = 'watchman';
 
@@ -15,8 +15,8 @@ export const checkWatchman = () => {
 }
 
 export const getRelayArgs = (options: RelayCompilerPluginOptions): string[] => {
-  // Ignore --watch option. Will be added later if need be
-  const { watch, ...args } = options;
+  // Ignore --watch and config options. Will be added later if need be
+  const { config, watch, ...args } = options;
   let result: string[] = []
   Object.entries(args).forEach(([key, value]) => {
     result.push(`--${key}`);
@@ -24,5 +24,5 @@ export const getRelayArgs = (options: RelayCompilerPluginOptions): string[] => {
       result.push(`${value}`);
     }
   })
-  return result;
+  return config ? [...result, config] : result;
 }

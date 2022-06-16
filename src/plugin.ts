@@ -21,9 +21,6 @@ export interface RelayCompilerPluginOptions {
   validate?: boolean;
   output?: OutputKind;
   repersist?: boolean;
-  artifactDirectory?: string;
-  schema?: string;
-  src?: string;
 }
 
 export class RelayCompilerPlugin implements WebpackPluginInstance {

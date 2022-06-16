@@ -45,6 +45,6 @@
     "schema-utils": "^4.0.0"
   },
   "peerDependencies": {
-    "relay-compiler": "^13.0.2"
+    "relay-compiler": "^14.0.0"
   }
 }

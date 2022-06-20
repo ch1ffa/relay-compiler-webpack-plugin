@@ -18,15 +18,6 @@ export const schema: Schema = {
     repersist: {
       type: 'boolean'
     },
-    artifactDirectory: {
-      type: 'string'
-    },
-    schema: {
-      type: 'string'
-    },
-    src: {
-      type: 'string'
-    },
   },
   'additionalProperties': false,
 };

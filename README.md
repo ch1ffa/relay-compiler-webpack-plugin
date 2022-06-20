@@ -26,7 +26,7 @@ module.exports = {
 
 ## Options
 
-You can pass options to the RelayCompilerPlugin which corespond to relay-compiler CLI options:
+You can pass options to the RelayCompilerPlugin which correspond to relay-compiler CLI options:
 
 ```ts
 export interface RelayCompilerPluginOptions {
@@ -35,9 +35,6 @@ export interface RelayCompilerPluginOptions {
   validate?: boolean;
   output?: OutputKind;
   repersist?: boolean;
-  artifactDirectory?: string;
-  schema?: string;
-  src?: string;
 }
 ```
 

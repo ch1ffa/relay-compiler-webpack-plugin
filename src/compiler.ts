@@ -10,7 +10,6 @@ export interface IRelayCompiler {
   runOnce(): void;
   watch(callback?: () => void): void;
   stop(): void;
-  hasError: boolean;
   error?: Error;
 }
 
@@ -19,10 +18,6 @@ export class RelayCompiler implements IRelayCompiler {
   error?: Error;
 
   constructor(private args: string[]) {}
-
-  get hasError() { 
-    return this.error != undefined;
-  }
 
   runOnce() {
     this.error = undefined;

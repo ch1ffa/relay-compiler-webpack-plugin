@@ -53,7 +53,7 @@ export class RelayCompilerPlugin implements WebpackPluginInstance {
   // Collect errors and push to compilation object`
   private installErrorHandler(compiler: Compiler) {
     compiler.hooks.emit.tapAsync(PLUGIN_NAME, (compilation, next) => {
-      if (this.relayCompiler.hasError) {
+      if (this.relayCompiler.error !== undefined) {
         // Workaround for Webpack 4 typings
         compilation.errors.push(this.relayCompiler.error as WebpackError);
       }

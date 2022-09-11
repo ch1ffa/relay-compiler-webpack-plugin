@@ -11,31 +11,33 @@ export interface IRelayCompiler {
   watch(callback?: () => void): void;
   stop(): void;
   hasError: boolean;
-  error: Error;
+  error?: Error;
 }
 
 export class RelayCompiler implements IRelayCompiler {
   private subprocess?: ChildProcess;
-  private errorMessage: string = '';
+  error?: Error;
 
   constructor(private args: string[]) {}
 
   get hasError() { 
-    return this.errorMessage.length > 0;
-  }
-
-  get error() {
-    return new Error(this.errorMessage);
+    return this.error != undefined;
   }
 
   runOnce() {
-    this.errorMessage = '';
+    this.error = undefined;
     const subprocess = spawn.sync(RELAY, this.args);
     if (subprocess.stdout?.byteLength > 0) {
-      console.log(`${subprocess.stdout}`);
+      console.log(subprocess.stdout.toString('utf-8'));
     }
     if (subprocess.stderr?.byteLength > 0) {
-      this.errorMessage += subprocess.stderr.toString('utf-8');
+      const errorMessage = subprocess.stderr.toString('utf-8')
+      if (errorMessage.toLowerCase().includes(FAILED)) {
+        this.error = new Error(errorMessage)
+      }
+    }
+    if (this.error === undefined) {
+      this.error = subprocess.error;
     }
   }
 
@@ -45,18 +47,30 @@ export class RelayCompiler implements IRelayCompiler {
     if (!this.subprocess) {
       // Start relay-compiler in watch mode
       this.subprocess = spawn(RELAY, [...this.args, '--watch']);
-      this.subprocess?.stderr?.setEncoding("utf-8");
       // Clear errors during compilation
-      this.subprocess?.stdout?.on('data', chunk => {
+      this.subprocess.stdout?.on('data', chunk => {
         if (String(chunk).toLowerCase().includes(COMPILING)) {
-          this.errorMessage = '';
+          this.error = undefined;
         }
       });
-      // Collect errors from stderr (added in v13.0.2)
-      this.subprocess?.stderr?.on('data', chunk => {
-        this.errorMessage += chunk;
+      let failed = false;
+      this.subprocess.on('error', error => {
+        if (!failed) {
+          this.error = error;
+          failed = true;
+          callback?.();
+        }
+      });
+      let errorMessage = '';
+      this.subprocess.stderr?.setEncoding("utf-8");
+      this.subprocess.stderr?.on('data', chunk => {
+        errorMessage += chunk;
+      });
+      this.subprocess.stderr?.on('end', () => {
         // Do something if compilation failed
-        if (this.errorMessage.toLowerCase().includes(FAILED)) {
+        if (errorMessage.toLowerCase().includes(FAILED) && !failed) {
+          this.error = new Error(errorMessage);
+          failed = true;
           callback?.();
         }
       });

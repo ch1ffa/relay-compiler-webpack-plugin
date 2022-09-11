@@ -1,6 +1,7 @@
 import spawn from 'cross-spawn';
 
 import type { ChildProcess } from 'child_process';
+import {WebpackError} from "webpack";
 
 const RELAY = 'relay-compiler';
 const COMPILING = 'compiling';
@@ -10,12 +11,12 @@ export interface IRelayCompiler {
   runOnce(): void;
   watch(callback?: () => void): void;
   stop(): void;
-  error?: Error;
+  error?: WebpackError;
 }
 
 export class RelayCompiler implements IRelayCompiler {
   private subprocess?: ChildProcess;
-  error?: Error;
+  error?: WebpackError;
 
   constructor(private args: string[]) {}
 
@@ -28,11 +29,11 @@ export class RelayCompiler implements IRelayCompiler {
     if (subprocess.stderr?.byteLength > 0) {
       const errorMessage = subprocess.stderr.toString('utf-8')
       if (errorMessage.toLowerCase().includes(FAILED)) {
-        this.error = new Error(errorMessage)
+        this.error = new WebpackError(errorMessage)
       }
     }
-    if (this.error === undefined) {
-      this.error = subprocess.error;
+    if (this.error === undefined && subprocess.error !== undefined) {
+      this.error = new WebpackError(subprocess.error.message);
     }
   }
 
@@ -51,7 +52,7 @@ export class RelayCompiler implements IRelayCompiler {
       let failed = false;
       this.subprocess.on('error', error => {
         if (!failed) {
-          this.error = error;
+          this.error = new WebpackError(error.message);
           failed = true;
           callback?.();
         }
@@ -64,7 +65,7 @@ export class RelayCompiler implements IRelayCompiler {
       this.subprocess.stderr?.on('end', () => {
         // Do something if compilation failed
         if (errorMessage.toLowerCase().includes(FAILED) && !failed) {
-          this.error = new Error(errorMessage);
+          this.error = new WebpackError(errorMessage);
           failed = true;
           callback?.();
         }

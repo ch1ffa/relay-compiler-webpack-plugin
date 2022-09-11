@@ -32,7 +32,8 @@ export class RelayCompiler implements IRelayCompiler {
         this.error = new WebpackError(errorMessage)
       }
     }
-    if (this.error === undefined && subprocess.error !== undefined) {
+    // This should not be null but it can be. See https://github.com/moxystudio/node-cross-spawn/issues/151.
+    if (this.error === undefined && subprocess.error !== undefined && subprocess.error !== null) {
       this.error = new WebpackError(subprocess.error.message);
     }
   }

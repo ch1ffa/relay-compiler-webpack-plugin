@@ -1,6 +1,7 @@
 import spawn from 'cross-spawn';
 
 import type { ChildProcess } from 'child_process';
+import {WebpackError} from "webpack";
 
 const RELAY = 'relay-compiler';
 const COMPILING = 'compiling';
@@ -10,32 +11,30 @@ export interface IRelayCompiler {
   runOnce(): void;
   watch(callback?: () => void): void;
   stop(): void;
-  hasError: boolean;
-  error: Error;
+  error?: WebpackError;
 }
 
 export class RelayCompiler implements IRelayCompiler {
   private subprocess?: ChildProcess;
-  private errorMessage: string = '';
+  error?: WebpackError;
 
   constructor(private args: string[]) {}
 
-  get hasError() { 
-    return this.errorMessage.length > 0;
-  }
-
-  get error() {
-    return new Error(this.errorMessage);
-  }
-
   runOnce() {
-    this.errorMessage = '';
+    this.error = undefined;
     const subprocess = spawn.sync(RELAY, this.args);
     if (subprocess.stdout?.byteLength > 0) {
-      console.log(`${subprocess.stdout}`);
+      console.log(subprocess.stdout.toString('utf-8'));
     }
     if (subprocess.stderr?.byteLength > 0) {
-      this.errorMessage += subprocess.stderr.toString('utf-8');
+      const errorMessage = subprocess.stderr.toString('utf-8')
+      if (errorMessage.toLowerCase().includes(FAILED)) {
+        this.error = new WebpackError(errorMessage)
+      }
+    }
+    // This should not be null but it can be. See https://github.com/moxystudio/node-cross-spawn/issues/151.
+    if (this.error === undefined && subprocess.error !== undefined && subprocess.error !== null) {
+      this.error = new WebpackError(subprocess.error.message);
     }
   }
 
@@ -45,18 +44,30 @@ export class RelayCompiler implements IRelayCompiler {
     if (!this.subprocess) {
       // Start relay-compiler in watch mode
       this.subprocess = spawn(RELAY, [...this.args, '--watch']);
-      this.subprocess?.stderr?.setEncoding("utf-8");
       // Clear errors during compilation
-      this.subprocess?.stdout?.on('data', chunk => {
+      this.subprocess.stdout?.on('data', chunk => {
         if (String(chunk).toLowerCase().includes(COMPILING)) {
-          this.errorMessage = '';
+          this.error = undefined;
         }
       });
-      // Collect errors from stderr (added in v13.0.2)
-      this.subprocess?.stderr?.on('data', chunk => {
-        this.errorMessage += chunk;
+      let failed = false;
+      this.subprocess.on('error', error => {
+        if (!failed) {
+          this.error = new WebpackError(error.message);
+          failed = true;
+          callback?.();
+        }
+      });
+      let errorMessage = '';
+      this.subprocess.stderr?.setEncoding("utf-8");
+      this.subprocess.stderr?.on('data', chunk => {
+        errorMessage += chunk;
+      });
+      this.subprocess.stderr?.on('end', () => {
         // Do something if compilation failed
-        if (this.errorMessage.toLowerCase().includes(FAILED)) {
+        if (errorMessage.toLowerCase().includes(FAILED) && !failed) {
+          this.error = new WebpackError(errorMessage);
+          failed = true;
           callback?.();
         }
       });
